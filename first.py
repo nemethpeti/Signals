@@ -26,13 +26,13 @@ napi = numerapi.SignalsAPI()
 # In[download]
 
 def load_data(download=False):
+      
     
-
     full_data = pd.read_parquet('full_data.prq')
     
     last_date = full_data.index.max().date().strftime('%Y-%m-%d')
     print(last_date)
-
+    
     # download
     if download == True:
         
@@ -42,7 +42,6 @@ def load_data(download=False):
         print(f"Number of tickers in map: {len(ticker_map)}")
         
         # read in list of active Signals tickers which can change slightly era to era
-        
         eligible_tickers = pd.Series(napi.ticker_universe(), name='numerai_ticker')
         print(f"Number of eligible tickers: {len(eligible_tickers)}")
         
@@ -59,14 +58,16 @@ def load_data(download=False):
         new_data.columns = ['date', 'ticker', 'price']
         new_data.set_index('date', inplace=True)
         # convert yahoo finance tickers back to numerai tickers
-        new_data['numerai_ticker'] = full_data.ticker.map(dict(zip(ticker_map['yahoo'], numerai_tickers)))
+        new_data['numerai_ticker'] = new_data.ticker.map(dict(zip(ticker_map['yahoo'], numerai_tickers)))
         
         full_data = pd.concat([full_data, new_data])
     
     print('Data downloaded.')
     print(f"Number of tickers with data: {len(full_data.numerai_ticker.unique())}")   
-    
+        
     return full_data
+
+#df = load_data(download=True)
 
 def RSI(df, interval=10):
 
@@ -194,7 +195,7 @@ if __name__ == '__main__':
     
     # train model
     print("Training model...")
-    model = GradientBoostingRegressor(subsample=0.1)
+    model = GradientBoostingRegressor(subsample=0.1, random_state=42)
     model.fit(train[features], train[TARGET_NAME])
     print("Model trained.")
 
